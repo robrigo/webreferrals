@@ -1,0 +1,23 @@
+<!doctype html>
+<html class="no-js" lang="">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="x-ua-compatible" content="ie=edge">
+        <title></title>
+        <meta name="description" content="World Wide Web Referrals">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        {% block styles %}
+            <link rel="stylesheet" type="text/css" href="//oss.maxcdn.com/semantic-ui/2.0.8/semantic.min.css"/>
+        {% endblock styles %}
+    </head>
+    <body>
+        <div id="content">
+            {% block content %}
+            {% endblock content %}
+        </div>
+        {% block scripts %}
+            <script src="https://code.jquery.com/jquery-1.11.3.min.js"></script>
+            <script src="//oss.maxcdn.com/semantic-ui/2.0.8/semantic.min.js"></script>
+        {% endblock scripts %}
+    </body>
+</html>

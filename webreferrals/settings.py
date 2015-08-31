@@ -13,14 +13,13 @@ https://docs.djangoproject.com/en/1.8/ref/settings/
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 import os
 import json
-from unipath import Path
 
 from django.core.exceptions import ImproperlyConfigured
 
 """ secrets module """
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-BASE_APP = Path(__file__).ancestor(1)
-with open(BASE_APP + "/secrets.json") as f:
+with open(os.path.join(BASE_DIR, "webreferrals/secrets.json")) as f:
     secrets = json.loads(f.read())
 
 
@@ -38,7 +37,6 @@ if "True" == DEBUG:
 elif "False" == DEBUG:
     DEBUG = False
 
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
 # Quick-start development settings - unsuitable for production
@@ -82,7 +80,7 @@ ROOT_URLCONF = 'webreferrals.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [os.path.join(BASE_DIR, "templates")],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
