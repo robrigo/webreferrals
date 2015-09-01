@@ -6,6 +6,9 @@
             display: inline-block;
             margin-top: 2em;
         }
+        .ui.table {
+            text-align: center;
+        }
     </style>
 {% endblock styles %}
 {% block content %}
@@ -15,22 +18,131 @@
             <div class="inline fields">
                 <div class="field">
                     <label>Add link: </label>
-                    <input type="text" name="slug" placeholder="Referral Slug" />
+                    <input id="link" type="text" name="slug" placeholder="Referral Slug" />
                 </div>
-                <button class="ui button" type="submit">Create</button>
+                <button id="create-link" class="ui button" type="submit">Create</button>
             </div>
         </form>
     </div>
+    <table class="ui inverted orange table">
+        <thead>
+            <tr>
+                <th>Link Name</th>
+                <th>Clicks</th>
+                <th>Edit</th>
+                <th>Delete</th>
+            </tr>
+        </thead>
+        <tbody>
+        </tbody>
+    </table>
 </div>
 {% endblock content %}
 {% block scripts %}
     {{ block.super }}
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-serialize-object/2.0.0/jquery.serialize-object.compiled.js"></script>
     <script type="text/javascript">
         $.fn.api.settings.api = {
-            'get links' : '/links',
             'create link' : '/links',
-            'edit link' : '/links/{pk}',
-            'delete link' : '/links/{pk}'
+            'edit link' : '/links/{id}',
+            'delete link' : '/links/{id}'
         };
+        $('form .button').api({
+            action: 'create link',
+            serializeForm: true,
+            method: 'POST',
+            onResponse: function(link) {
+                addLink(link);
+            }
+        });
+
+        function editLink(elem) {
+            var row = $(elem).parents('tr');
+            var id = row.data('id');
+            var cell = row.find('>:first-child');
+
+            $.when(writeEdit(cell, id)).then(saveEdit, cancelEdit);
+        }
+
+        function writeEdit(cell, id) {
+            var originalText = cell[0].innerHTML;
+            cell.attr("contenteditable", true);
+            var range = rangy.createRange();
+            range.selectNodeContents(cell[0]);
+            var selection = rangy.getSelection();
+            selection.setSingleRange(range);
+
+            $dfd = $.Deferred();
+
+            cell.on('keydown', function(event) {
+                if (13 === event.keyCode) {
+                    event.preventDefault();
+                    var updatedSlug = cell[0].innerHTML;
+                    $dfd.resolve(id, updatedSlug, cell);
+                } else if (27 === event.keyCode) {
+                    $dfd.reject(cell, originalText);
+                }
+
+            });
+
+
+            return $dfd.promise();
+        }
+
+        function saveEdit(id, slug, cell) {
+            $.ajax({
+                url: "/links/" + id,
+                type: "PUT",
+                data: {slug: slug},
+                success: function (response) {
+                    cleanUpEdit(cell);
+                }
+            });
+        }
+
+        function cancelEdit(cell, originalText) {
+            cell.text(originalText);
+            cleanUpEdit(cell);
+        }
+
+        function cleanUpEdit(cell) {
+            cell.attr("contenteditable", false);
+            rangy.getSelection().removeAllRanges();
+        }
+
+        function deleteLink(elem) {
+            var id = $(elem).parents('tr').data('id');
+            $.ajax({
+                url: "/links/" + id,
+                type: "DELETE",
+                success: function (response) {
+                    removeLink(elem);
+                }
+            });
+        }
+
+        function addLink(link) {
+            var rowHtml = "<tr data-id=" + link.id + ">"
+                + "<td>" + link.slug + "</td>"
+                + "<td>" + link.clicks + "</td>"
+                + editButtonHtml
+                + deleteButtonHtml
+                + "</tr>";
+            $("tbody").append(rowHtml);
+        }
+
+        function removeLink(elem) {
+            $(elem).parents('tr').remove();
+        }
+
+        editButtonHtml = "<td><button onclick='editLink(this)' class='ui edit button'>Edit</button></td>";
+        deleteButtonHtml = "<td><button onclick='deleteLink(this)' class='ui delete button'>Delete</button></td>";
+        $(function () {
+            $.get("/links", function (response) {
+                $(response).each(function () {
+                    addLink($(this)[0]);
+                });
+            });
+        });
     </script>
 {% endblock scripts %}
