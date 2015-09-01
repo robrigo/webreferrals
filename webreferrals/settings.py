@@ -19,19 +19,7 @@ from django.core.exceptions import ImproperlyConfigured
 """ secrets module """
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-with open(os.path.join(BASE_DIR, "webreferrals/secrets.json")) as f:
-    secrets = json.loads(f.read())
-
-
-def get_secret(setting, secrets=secrets):
-    """Get the secret variable or return explicit exception"""
-    try:
-        return secrets[setting]
-    except KeyError:
-        error_msg = "Set the {0} environment variable".format(setting)
-        raise ImproperlyConfigured(error_msg)
-
-DEBUG = get_secret("DEBUG")
+DEBUG = os.environ.get("DEBUG")
 if "True" == DEBUG:
     DEBUG = True
 elif "False" == DEBUG:
@@ -43,7 +31,7 @@ elif "False" == DEBUG:
 # See https://docs.djangoproject.com/en/1.8/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = get_secret("SECRET_KEY")
+SECRET_KEY = os.environ.get("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -102,11 +90,11 @@ WSGI_APPLICATION = 'webreferrals.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': get_secret("DB_NAME"),
-        'USER': get_secret("DB_USER"),
-        'PASSWORD': get_secret("DB_PASSWORD"),
-        'HOST': get_secret("DB_HOST"),
-        'PORT': get_secret("DB_PORT")
+        'NAME': os.environ.get("DB_NAME"),
+        'USER': os.environ.get("DB_USER"),
+        'PASSWORD': os.environ.get("DB_PASSWORD"),
+        'HOST': os.environ.get("DB_HOST"),
+        'PORT': os.environ.get("DB_PORT")
     }
 }
 
